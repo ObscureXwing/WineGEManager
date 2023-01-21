@@ -150,7 +150,7 @@ base_build()
 	eval base_prep
 	export PATH=$PWD/Wine/bin/:$PATH
 	export WINEPREFIX=$PWD/PFX
-	winetricks "${@:2}"
+	if [[ ! -z "$2" ]]; then winetricks "${@:2}"; fi
 	winetricks quartz xact xact_x64 d3dx9 ffdshow d3dx10 d3dx10_43 d3dx11_42 d3dx11_43 d3dcompiler_42 d3dcompiler_43 d3dcompiler_46 d3dcompiler_47
 	wine VCRHyb/VCRHyb64.exe
 	winetricks corefonts mfc42 msxml3 msxml4 msxml6 binkw32 win10
