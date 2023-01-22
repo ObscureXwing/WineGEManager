@@ -21,7 +21,9 @@ Bash script which makes it easy to download Wine-GE, synthesise the prefix, and 
 
 Run the following commands in your favourite terminal emulator :
 
-``` mkdir WineGEManager && cd WineGEManager ``` (for the script to work correctly, its installation and first run have to in an empty directory) <br>
+``` mkdir WineGEManager && cd WineGEManager ``` 
+
+(for the script to work correctly, its installation and first run have to in an empty directory)
 
 ``` wget https://github.com/ObscureXwing/WineGEManager/blob/main/WineGEManager.sh ``` <br>
 ``` chmod +x WineGEManager.sh ```
