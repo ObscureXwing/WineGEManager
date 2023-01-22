@@ -25,5 +25,5 @@ Run the following commands in your favourite terminal emulator :
 
 (for the script to work correctly, its installation and first run have to in an empty directory)
 
-``` wget https://github.com/ObscureXwing/WineGEManager/blob/main/WineGEManager.sh ``` <br>
+``` wget https://raw.githubusercontent.com/ObscureXwing/WineGEManager/main/WineGEManager.sh ``` <br>
 ``` chmod +x WineGEManager.sh ```
