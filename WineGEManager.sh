@@ -129,7 +129,8 @@ base_prep()
 
 base_run()
 {
-	if [[ ! -z "$1" ]]; then 
+	if [[ ! -z "$@" ]]; then 
+		export RUNPATH="${@:2}"
 		export PATH=$PWD/Wine/bin/:$PATH
 		export WINEPREFIX=$PWD/PFX
 		export WINEFSYNC=1
@@ -140,8 +141,8 @@ base_run()
 		export __NV_PRIME_RENDER_OFFLOAD=1
 		export __VK_LAYER_NV_optimus=NVIDIA_only
 		export __GLX_VENDOR_LIBRARY_NAME=nvidia
-		if [[ -f "$2" ]]; then cd $(dirname "$2"); fi
-		wine "${@:2}"
+		if [[ -f "$RUNPATH" ]]; then cd "$(dirname "$RUNPATH")"; fi
+		wine "$(basename "$RUNPATH")"
 	fi
 }
 
