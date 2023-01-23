@@ -13,6 +13,20 @@ Bash script which makes it easy to download Wine-GE, synthesise the prefix, and 
 
 ``` ./WineGEManager.sh run path/to/file ``` performs the process of starting an application with all the necessary basic environment variables to get a high performance of applications running through Wine-GE, this also implies that owners of laptops with Nvidia D-GPU do not need to use prime-run, also applications will run with 60 FPS locked
 
+## Tips and tricks
+
+``` ./WineGEManager.sh build x ``` you can leave it empty, and use "build" as is, without additional arguments, or instead of "x" you can also add the necessary components whose installation takes priority over that of the other components the script is programmed to install.
+
+for example :
+
+``` ./WineGEManager.sh build dotnet20 ``` installs .NET Framework 2.0, and only then proceeds to install other components
+
+``` ./WineGEManager.sh build dotnet35 ``` the same, but for .NET Framework 3.5
+
+``` ./WineGEManager.sh build directmusic dsound ``` helps to fix the sound in some games, but also breaks the sound in some other games, for example in Juiced when you install directmusic and dsound, sounds start playing correctly, but at the same time in Prototype game the sound becomes just awful, use with caution
+
+``` ./WineGEManager.sh run winecfg ``` with this command you can run the Wine configuration manager and, for example, if you run a rather old game where the sound doesn't work at all, you can change the Windows version to XP and this may solve your sound problems
+
 ## Requirements
 
 ``` unzip ``` ``` unrar ``` ``` tar ``` ``` xz ``` ``` gzip ``` ``` wget ``` ``` curl ``` ``` winetricks ``` ``` F-Sync supported kernel ```
@@ -27,3 +41,8 @@ Run the following commands in your favourite terminal emulator :
 
 ``` wget https://raw.githubusercontent.com/ObscureXwing/WineGEManager/main/WineGEManager.sh ``` <br>
 ``` chmod +x WineGEManager.sh ```
+
+## TODO
+
+- implement automatic installation of system dependencies for Wine-GE to work correctly on freshly installed systems.
+- add an argument that would call a menu where the user could configure in detail the behavior of the script when launching programs/games, such as the FPS limit, the number of processor threads on which the process will be allowed to run, and so on.
