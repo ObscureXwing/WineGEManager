@@ -23,10 +23,6 @@ for example :
 
 ``` ./WineGEManager.sh build dotnet35 ``` the same, but for .NET Framework 3.5
 
-``` ./WineGEManager.sh build directmusic dsound ``` helps to fix the sound in some games, but also breaks the sound in some other games, for example in Juiced when you install directmusic and dsound, sounds start playing correctly, but at the same time in Prototype game the sound becomes just awful, use with caution
-
-``` ./WineGEManager.sh run winecfg ``` with this command you can run the Wine configuration manager and, for example, if you run a rather old game where the sound doesn't work at all, you can change the Windows version to XP and this may solve your sound problems
-
 ## Requirements
 
 ``` unzip ``` ``` unrar ``` ``` tar ``` ``` xz ``` ``` gzip ``` ``` wget ``` ``` curl ``` ``` winetricks ``` ``` F-Sync supported kernel ```
@@ -41,6 +37,12 @@ Run the following commands in your favourite terminal emulator :
 
 ``` wget https://raw.githubusercontent.com/ObscureXwing/WineGEManager/main/WineGEManager.sh ``` <br>
 ``` chmod +x WineGEManager.sh ```
+
+## Troubleshooting
+
+``` ./WineGEManager.sh build directmusic dsound ``` helps to fix the sound in some games, but also breaks the sound in some other games, for example in Juiced when you install directmusic and dsound, sounds start playing correctly, but at the same time in Prototype game the sound becomes just awful, use with caution
+
+``` ./WineGEManager.sh run winecfg ``` with this command you can run the Wine configuration manager and, for example, if you run a rather old game where the sound doesn't work at all, you can change the Windows version to XP and this may solve your sound problems
 
 ## TODO
 
