@@ -18,6 +18,56 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 LICENSE&COPYRIGHT
 
+#==========
+# [system]
+#==========
+
+gem_detectsystem()
+{
+	if [[ -f "/usr/bin/xbps-install" ]]; then echo "void"; fi
+	if [[ -f "/usr/bin/pacman" ]]; then echo "arch"; fi
+	if [[ -f "/usr/bin/apt" && "$(cat "/etc/os-release" | grep "PRETTY_NAME")" == *"Mint"* ]]; then echo "mint"; fi
+	if [[ -f "/usr/bin/apt" && "$(cat "/etc/os-release" | grep "PRETTY_NAME")" == *"Ubuntu"* ]]; then echo "ubuntu"; fi
+}
+
+gem_checkdeps()
+{
+	pkgs_void="fontconfig fontconfig-32bit lcms2 lcms2-32bit libxml2 libxml2-32bit libXcursor libXcursor-32bit libXrandr libXrandr-32bit libXdamage libXdamage-32bit libXi libXi-32bit gettext gettext-32bit freetype freetype-32bit glu glu-32bit libSM libSM-32bit libgcc libgcc-32bit libpcap libpcap-32bit FAudio FAudio-32bit desktop-file-utils giflib giflib-32bit libpng libpng-32bit libldap libldap-32bit gnutls gnutls-32bit mpg123 libmpg123 libmpg123-32bit libopenal libopenal-32bit v4l-utils v4l-utils-32bit libpulseaudio libpulseaudio-32bit libgpg-error libgpg-error-32bit alsa-plugins alsa-plugins-32bit alsa-plugins-pulseaudio alsa-plugins-pulseaudio-32bit alsa-lib alsa-lib-32bit libjpeg-turbo libjpeg-turbo-32bit sqlite sqlite-32bit libXcomposite libXcomposite-32bit libXinerama libXinerama-32bit libgcrypt libgcrypt-32bit ncurses ncurses-base ncurses-libs ncurses-libs-32bit ocl-icd ocl-icd-32bit libxslt libxslt-32bit libva libva-32bit libva-glx libva-glx-32bit libva-intel-driver libva-intel-driver-32bit libva-vdpau-driver libva-vdpau-driver-32bit gtk+3 gtk+3-32bit gst-plugins-base1 gst-plugins-base1-32bit gst-plugins-good1 gst-plugins-good1-32bit gst-plugins-bad1 gst-plugins-bad1-32bit gst-plugins-ugly1 gst-plugins-ugly1-32bit vulkan-loader vulkan-loader-32bit"
+
+	pkgs_arch="fontconfig lib32-fontconfig lcms2 lib32-lcms2 libxml2 lib32-libxml2 libxcursor lib32-libxcursor libxrandr lib32-libxrandr libxdamage lib32-libxdamage libxi lib32-libxi gettext lib32-gettext freetype2 lib32-freetype2 glu lib32-glu libsm lib32-libsm gcc-libs lib32-gcc-libs libpcap lib32-libpcap faudio lib32-faudio desktop-file-utils giflib lib32-giflib libpng lib32-libpng libldap lib32-libldap gnutls lib32-gnutls mpg123 lib32-mpg123 openal lib32-openal v4l-utils lib32-v4l-utils libpulse lib32-libpulse libgpg-error lib32-libgpg-error alsa-plugins lib32-alsa-plugins alsa-lib lib32-alsa-lib libjpeg-turbo lib32-libjpeg-turbo sqlite lib32-sqlite libxcomposite lib32-libxcomposite libxinerama lib32-libxinerama libgcrypt lib32-libgcrypt ncurses lib32-ncurses ocl-icd lib32-ocl-icd libxslt lib32-libxslt libva lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs lib32-gst-plugins-base-libs gst-plugins-good lib32-gst-plugins-good gst-plugins-bad lib32-gst-plugins-bad gst-plugins-ugly lib32-gst-plugins-ugly vulkan-icd-loader lib32-vulkan-icd-loader"
+
+	case $(gem_detectsystem) in
+		void) eval sudo xbps-install -S "$pkgs_void" ;;
+		arch) eval sudo pacman -Sy "$pkgs_arch" ;;
+	esac
+}
+
+gem_install()
+{
+	if [[ -d "$1/x64" && -d "$1/x32" || -d "$1/x64" && -d "$1/x86" ]]; then
+		export FARG="$1"
+		export PATH=$PWD/Wine/bin/:$PATH
+		export WINEPREFIX=$PWD/PFX
+		export WINEDEBUG=-all
+		export WINEDLLOVERRIDES="mscoree,mshtml="
+		export REGKEY='HKEY_CURRENT_USER\Software\Wine\DllOverrides'
+		export X86PLATFORMLIBS="x32"
+		if [[ ! -d "$1/$X86PLATFORMLIBS" ]]; then X86PLATFORMLIBS="x86"; fi
+		if [[ -d "PFX/drive_c/windows/syswow64" ]]; then PFXArch="64bit"; else PFXArch="32bit"; fi
+		case $PFXArch in
+			64bit)
+				ls -1 $1/x64/ | xargs -0 -d '\n' -P1 -I % bash -c 'LIBNAME="$(basename % .dll)" && cp -v --reflink=auto "$FARG/x64/%" PFX/drive_c/windows/system32/ && wine reg add "$REGKEY" /v "$LIBNAME" /d native /f'
+				ls -1 $1/$X86PLATFORMLIBS/ | xargs -0 -d '\n' -P1 -I % bash -c 'LIBNAME="$(basename % .dll)" && cp -v --reflink=auto "$FARG/$X86PLATFORMLIBS/%" PFX/drive_c/windows/syswow64/ && wine reg add "$REGKEY" /v "$LIBNAME" /d native /f' ;;
+			32bit)
+				ls -1 $1/$X86PLATFORMLIBS/ | xargs -0 -d '\n' -P1 -I % bash -c 'LIBNAME="$(basename % .dll)" && cp -v --reflink=auto "$FARG/$X86PLATFORMLIBS/%" PFX/drive_c/windows/system32/ && wine reg add "$REGKEY" /v "$LIBNAME" /d native /f' ;;
+		esac
+	fi
+}
+
+#==========
+# [wine]
+#==========
+
 github_link-hack()
 {
 	if [[ ! -z "$(echo $1 | grep https)" ]]; then
@@ -48,15 +98,6 @@ get-latest-vcrhyb()
 {
 	VCRHyb="$(curl -s https://www.upload.ee/files/14035569/VCR_Hyb_x86_x64_09.04.2022.rar.html | awk -F 'a id="d_l" href="|" ' '{print $2}' | grep .rar | grep https)"
 	if [[ ! -z "$VCRHyb" ]]; then echo "$VCRHyb"; fi
-}
-
-strip-link()
-{
-	if [[ ! -z "$(echo $1 | grep https)" ]]; then
-		StripLink=$(echo "$1" | awk -F '/' '{print $NF}')
-		#StripLink=${StripLink//'.tar.xz'/""}
-		if [[ ! -z "$DXVK" ]]; then echo "$DXVK"; fi
-	fi
 }
 
 FindFile()
@@ -155,8 +196,8 @@ base_build()
 	winetricks quartz xact xact_x64 d3dx9 ffdshow d3dx10 d3dx10_43 d3dx11_42 d3dx11_43 d3dcompiler_42 d3dcompiler_43 d3dcompiler_46 d3dcompiler_47
 	wine VCRHyb/VCRHyb64.exe
 	winetricks corefonts mfc42 msxml3 msxml4 msxml6 binkw32 win10
-	bash DXVK/setup_dxvk.sh install
-	bash VKD3D/setup_vkd3d_proton.sh install
+	if [[ -f "DXVK/setup_dxvk.sh" ]]; then bash DXVK/setup_dxvk.sh install; else eval gem_install "DXVK"; fi
+	if [[ -f "VKD3D/setup_vkd3d_proton.sh" ]]; then bash VKD3D/setup_vkd3d_proton.sh install; else eval gem_install "VKD3D"; fi
 	bash MF/mf-install.sh
 	echo "==================="
 	echo "done."
@@ -164,13 +205,16 @@ base_build()
 
 init_script()
 {
+	if [[ ! -z "$LNK" ]]; then WRKDIR="$(dirname -- "$LNK")"; else WRKDIR="$(dirname -- "$WRKPATH")"; fi
 	if [[ "$WRKDIR" != "." ]]; then cd "$WRKDIR"; fi
 	if [[ "$1" = "update" ]]; then eval base_update "$@"; fi
 	if [[ "$1" = "build" ]]; then eval base_build "$@"; fi
 	if [[ "$1" = "run" && ! -z "$2" ]]; then eval base_run "$@"; fi
+	if [[ "$1" = "checkdeps" ]]; then eval gem_checkdeps "$@"; fi
 }
 
-export WRKDIR="$(dirname -- "${BASH_SOURCE[0]}")"
+export WRKPATH="${BASH_SOURCE[0]}"
+export LNK="$(readlink "$WRKPATH")"
 export DXVK_Legacy="https://github.com/Sporif/dxvk-async/releases/download/1.10.2/dxvk-async-1.10.2.tar.gz"
 export VKD3D_Legacy="https://github.com/HansKristian-Work/vkd3d-proton/releases/download/v2.6/vkd3d-proton-2.6.tar.zst"
 export MF="https://github.com/z0z0z/mf-install/archive/refs/heads/master.zip"
