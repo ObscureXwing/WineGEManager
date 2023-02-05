@@ -13,7 +13,7 @@ Bash script which makes it easy to download Wine-GE, synthesise the prefix, and 
 
 ``` ./WineGEManager.sh run path/to/file ``` performs the process of starting an application with all the necessary basic environment variables to get a high performance of applications running through Wine-GE, this also implies that owners of laptops with Nvidia D-GPU do not need to use prime-run, also applications will run with 60 FPS locked
 
-``` ./WineGEManager.sh run uninstaller ``` menu through which you can install(opens the file picker, it will be the same as running run path/to/filename.exe command) and uninstall programs
+``` ./WineGEManager.sh run uninstaller ``` menu through which you can install (opens the file picker, it will be the same as running run path/to/filename.exe command) and uninstall programs
 
 ## Tips and tricks
 
