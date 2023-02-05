@@ -7,11 +7,13 @@ Bash script which makes it easy to download Wine-GE, synthesise the prefix, and 
 
 ``` ./WineGEManager.sh update ``` this command will fetch latest available Wine-GE, DXVK-Async, VKD3D-Proton, MF-Install, VCRHyb, and automatically download all the stuff
 
-``` ./WineGEManager.sh update legacy ``` does the same, but with little difference, instead of getting latest available DXVK and VKD3D, for legacy PC's and Laptop's 1.10.2 and 2.6 will be downloaded respectively instead of new ones
+``` ./WineGEManager.sh update legacy ``` does the same, but with little difference, instead of getting latest available DXVK and VKD3D, for legacy PC's and Laptop's 1.10.3 and 2.6 will be downloaded respectively instead of new ones
 
 ``` ./WineGEManager.sh build ``` will start the synthesis process of Wine prefix, this also implies the automatic installation of all the basic components necessary to run games and programs inside the prefix, including the automatic installation of DXVK, VKD3D-Proton, Media Foundation libraries and VCRHyb
 
 ``` ./WineGEManager.sh run path/to/file ``` performs the process of starting an application with all the necessary basic environment variables to get a high performance of applications running through Wine-GE, this also implies that owners of laptops with Nvidia D-GPU do not need to use prime-run, also applications will run with 60 FPS locked
+
+``` ./WineGEManager.sh run uninstaller ``` menu through which you can install(opens the file picker, it will be the same as running run path/to/filename.exe command) and uninstall programs
 
 ## Tips and tricks
 
