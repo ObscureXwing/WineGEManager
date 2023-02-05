@@ -44,23 +44,36 @@ gem_checkdeps()
 
 gem_install()
 {
-	if [[ -d "$1/x64" && -d "$1/x32" || -d "$1/x64" && -d "$1/x86" ]]; then
+	if [[ -d "$1/x64" && -d "$1/x32" || -d "$1/x64" && -d "$1/x86" || -d "$1/system32" && -d "$1/syswow64" ]]; then
 		export FARG="$1"
 		export PATH=$PWD/Wine/bin/:$PATH
 		export WINEPREFIX=$PWD/PFX
 		export WINEDEBUG=-all
 		export WINEDLLOVERRIDES="mscoree,mshtml="
+		export DXVK_LOG_LEVEL=none
+		export DXVK_LOG_PATH=none
 		export REGKEY='HKEY_CURRENT_USER\Software\Wine\DllOverrides'
 		export X86PLATFORMLIBS="x32"
+		export X64PLATFORMLIBS="x64"
 		if [[ ! -d "$1/$X86PLATFORMLIBS" ]]; then X86PLATFORMLIBS="x86"; fi
+		if [[ ! -d "$1/$X86PLATFORMLIBS" ]]; then X86PLATFORMLIBS="syswow64"; fi
+		if [[ ! -d "$1/$X64PLATFORMLIBS" ]]; then X64PLATFORMLIBS="system32"; fi
 		if [[ -d "PFX/drive_c/windows/syswow64" ]]; then PFXArch="64bit"; else PFXArch="32bit"; fi
 		case $PFXArch in
 			64bit)
-				ls -1 $1/x64/ | xargs -0 -d '\n' -P1 -I % bash -c 'LIBNAME="$(basename % .dll)" && cp -v --reflink=auto "$FARG/x64/%" PFX/drive_c/windows/system32/ && wine reg add "$REGKEY" /v "$LIBNAME" /d native /f'
+				ls -1 $1/$X64PLATFORMLIBS/ | xargs -0 -d '\n' -P1 -I % bash -c 'LIBNAME="$(basename % .dll)" && cp -v --reflink=auto "$FARG/$X64PLATFORMLIBS/%" PFX/drive_c/windows/system32/ && wine reg add "$REGKEY" /v "$LIBNAME" /d native /f'
 				ls -1 $1/$X86PLATFORMLIBS/ | xargs -0 -d '\n' -P1 -I % bash -c 'LIBNAME="$(basename % .dll)" && cp -v --reflink=auto "$FARG/$X86PLATFORMLIBS/%" PFX/drive_c/windows/syswow64/ && wine reg add "$REGKEY" /v "$LIBNAME" /d native /f' ;;
 			32bit)
 				ls -1 $1/$X86PLATFORMLIBS/ | xargs -0 -d '\n' -P1 -I % bash -c 'LIBNAME="$(basename % .dll)" && cp -v --reflink=auto "$FARG/$X86PLATFORMLIBS/%" PFX/drive_c/windows/system32/ && wine reg add "$REGKEY" /v "$LIBNAME" /d native /f' ;;
 		esac
+		if [[ -f "$1/mf.reg" ]]; then wine regedit.exe "$1/mf.reg" && wine64 regedit.exe "$1/mf.reg"; fi
+		if [[ -f "$1/wmf.reg" ]]; then wine regedit.exe "$1/wmf.reg" && wine64 regedit.exe "$1/wmf.reg"; fi
+		if [[ -f "$1/$X86PLATFORMLIBS/colorcnv.dll" ]]; then wine regsvr32 colorcnv.dll; fi
+		if [[ -f "$1/$X86PLATFORMLIBS/msmpeg2adec.dll" ]]; then wine regsvr32 msmpeg2adec.dll; fi
+		if [[ -f "$1/$X86PLATFORMLIBS/msmpeg2vdec.dll" ]]; then wine regsvr32 msmpeg2vdec.dll; fi
+		if [[ -f "$1/$X64PLATFORMLIBS/colorcnv.dll" ]]; then wine64 regsvr32 colorcnv.dll; fi
+		if [[ -f "$1/$X64PLATFORMLIBS/msmpeg2adec.dll" ]]; then wine64 regsvr32 msmpeg2adec.dll; fi
+		if [[ -f "$1/$X64PLATFORMLIBS/msmpeg2vdec.dll" ]]; then wine64 regsvr32 msmpeg2vdec.dll; fi 
 	fi
 }
 
@@ -198,9 +211,17 @@ base_build()
 	winetricks corefonts mfc42 msxml3 msxml4 msxml6 binkw32 win10
 	if [[ -f "DXVK/setup_dxvk.sh" ]]; then bash DXVK/setup_dxvk.sh install; else eval gem_install "DXVK"; fi
 	if [[ -f "VKD3D/setup_vkd3d_proton.sh" ]]; then bash VKD3D/setup_vkd3d_proton.sh install; else eval gem_install "VKD3D"; fi
-	bash MF/mf-install.sh
+	if [[ -f "MF/mf-install.sh" ]]; then bash MF/mf-install.sh; else eval gem_install "MF"; fi
 	echo "==================="
 	echo "done."
+}
+
+base_clean()
+{
+	if [[ -d "DXVK" ]]; then rm -rfv "DXVK"; fi
+	if [[ -d "MF" ]]; then rm -rfv "MF"; fi
+	if [[ -d "VCRHyb" ]]; then rm -rfv "VCRHyb"; fi
+	if [[ -d "VKD3D" ]]; then rm -rfv "VKD3D"; fi
 }
 
 init_script()
@@ -208,14 +229,19 @@ init_script()
 	if [[ ! -z "$LNK" ]]; then WRKDIR="$(dirname -- "$LNK")"; else WRKDIR="$(dirname -- "$WRKPATH")"; fi
 	if [[ "$WRKDIR" != "." ]]; then cd "$WRKDIR"; fi
 	if [[ "$1" = "update" ]]; then eval base_update "$@"; fi
+	if [[ "$1" = "prep" ]]; then eval base_prep; fi	
 	if [[ "$1" = "build" ]]; then eval base_build "$@"; fi
 	if [[ "$1" = "run" && ! -z "$2" ]]; then eval base_run "$@"; fi
 	if [[ "$1" = "checkdeps" ]]; then eval gem_checkdeps "$@"; fi
+	if [[ "$1" = "clean" ]]; then eval base_clean; fi
+	if [[ "$1" = "install-dxvk" ]]; then eval gem_install "DXVK"; fi
+	if [[ "$1" = "install-vkd3d" ]]; then eval gem_install "VKD3D"; fi
+	if [[ "$1" = "install-mf" ]]; then eval gem_install "MF"; fi
 }
 
 export WRKPATH="${BASH_SOURCE[0]}"
 export LNK="$(readlink "$WRKPATH")"
-export DXVK_Legacy="https://github.com/Sporif/dxvk-async/releases/download/1.10.2/dxvk-async-1.10.2.tar.gz"
+export DXVK_Legacy="https://github.com/Sporif/dxvk-async/releases/download/1.10.3/dxvk-async-1.10.3.tar.gz"
 export VKD3D_Legacy="https://github.com/HansKristian-Work/vkd3d-proton/releases/download/v2.6/vkd3d-proton-2.6.tar.zst"
 export MF="https://github.com/z0z0z/mf-install/archive/refs/heads/master.zip"
 eval init_script "$@"
