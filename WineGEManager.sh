@@ -131,11 +131,11 @@ base_update()
 		if [[ ! -f "VCR_Hyb_x86_x64_09.04.2022.rar" && ! -d "VCRHyb" ]]; then wget $(get-latest-vcrhyb); fi
 	fi
 	if [[ "$2" = "legacy" ]]; then
-		if [[ -z $(FindFile wine-lutris) ]]; then wget $(get-latest_wine-ge); fi
-		if [[ -z $(FindFile dxvk-async) ]]; then wget "$DXVK_Legacy"; fi
-		if [[ -z $(FindFile vkd3d-proton) ]]; then wget "$VKD3D_Legacy"; fi
-		if [[ ! -f "master.zip" ]]; then wget "$MF"; fi
-		if [[ ! -f "VCR_Hyb_x86_x64_09.04.2022.rar" ]]; then wget $(get-latest-vcrhyb); fi
+		if [[ -z $(FindFile wine-lutris) && ! -d "Wine" ]]; then wget $(get-latest_wine-ge); fi
+		if [[ -z $(FindFile dxvk-async) && ! -d "DXVK" ]]; then wget "$DXVK_Legacy"; fi
+		if [[ -z $(FindFile vkd3d-proton) && ! -d "VKD3D" ]]; then wget "$VKD3D_Legacy"; fi
+		if [[ ! -f "master.zip" && ! -d "MF" ]]; then wget "$MF"; fi
+		if [[ ! -f "VCR_Hyb_x86_x64_09.04.2022.rar" && ! -d "VCRHyb" ]]; then wget $(get-latest-vcrhyb); fi
 	fi 
 }
 
